@@ -2,19 +2,27 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-# Generate the dataset
+# Generate the dataset 
+# room: 1-5, motion: 0/1, temperature: 18-30(C), light: 0/1, time stamp: every 10min, 30 days
 def generate_dataset():
-    start_date = datetime.now()
-    date_rng = pd.date_range(start_date, periods=30*24*6, freq='10min')
-    data = {
-        'timestamp': date_rng,
-        'room': np.random.randint(1, 8, size=(len(date_rng))),
-        'motion': np.random.randint(0, 2, size=(len(date_rng))),
-        'temperature': np.random.uniform(18, 25, size=(len(date_rng))),
-        'light': np.random.randint(0, 2, size=(len(date_rng))),
-    }
-    df = pd.DataFrame(data)
-    df['anomaly'] = np.where((df['light'] == 1) & (df['motion'] == 0), 1, 0)
+    start_date = datetime(2023, 6, 1)
+    end_date = datetime(2023, 6, 30, 23, 59)
+    date_rng = pd.date_range(start_date, end_date, freq='10min')
+    data = []
+    
+    for room in range(1, 6):
+      room_data = {
+          'timestamp': date_rng,
+          'room': room,
+          'motion': np.random.randint(0, 2, size=(len(date_rng))),
+          'temperature': np.random.uniform(18, 30, size=(len(date_rng))),
+          'light': np.random.randint(0, 2, size=(len(date_rng))),
+      }
+      room_df = pd.DataFrame(room_data)
+      room_df['anomaly'] = np.where((room_df['light'] == 1) & (room_df['motion'] == 0), 1, 0) # for checking accuracy
+      data.append(room_df)
+      
+    df = pd.concat(data, ignore_index=True)
     return df
 
 df = generate_dataset()
