@@ -1,4 +1,5 @@
 from sklearn.ensemble import IsolationForest
+from sklearn.model_selection import train_test_split
 import pandas as pd
 from datasets import load_dataset
 import matplotlib.pyplot as plt
@@ -7,21 +8,24 @@ import matplotlib.pyplot as plt
 dataset = load_dataset("hangyeol522/anomaly-detection-model")
 
 # Convert to pandas dataframe
-df = dataset['train'].to_pandas()  # Load the training portion of the dataset
+df = dataset['train'].to_pandas()
 
 # Select features
 X = df[['light', 'motion']]
 
+# Split the dataset into training and test sets
+X_train, X_test, df_train, df_test = train_test_split(X, df, test_size=0.2, random_state=42)
+
 # Train the Isolation Forest model
 model = IsolationForest(contamination=0.2)
-model.fit(X)
+model.fit(X_train)
 
-# Predict anomalies
-df['anomaly'] = model.predict(X)
-df['anomaly'] = df['anomaly'].map({1: 0, -1: 1})  # 1: normal, -1: anomaly
+# Predict anomalies on the test set
+df_test['anomaly'] = model.predict(X_test)
+df_test['anomaly'] = df_test['anomaly'].map({1: 0, -1: 1})  # 1: normal, -1: anomaly
 
-# Count the number of anomalies for each room
-anomalies_per_room = df[df['anomaly'] == 1].groupby('room').size()
+# Count the number of anomalies for each room in the test set
+anomalies_per_room = df_test[df_test['anomaly'] == 1].groupby('room').size()
 
 # Plotting the results
 fig, ax = plt.subplots(figsize=(8, 6))
@@ -35,5 +39,5 @@ ax.set_xticklabels(['Room 1', 'Room 2', 'Room 3', 'Room 4', 'Room 5'])
 
 plt.show()
 
-# Save the dataframe to a CSV file
-df.to_csv('anomaly_detection_results.csv', index=False)
+# Save the test dataframe with anomaly predictions to a CSV file
+df_test.to_csv('anomaly_detection_results.csv', index=False)
