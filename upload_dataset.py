@@ -9,3 +9,5 @@ dataset = Dataset.from_pandas(df)
 
 # Push the dataset to Hugging Face
 dataset.push_to_hub("hangyeol522/anomaly-detection-model")
+
+print("Successfully uploaded!")
